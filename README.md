@@ -30,6 +30,14 @@ The dataset used for this project is called "YouTube Statistics" and can be foun
 - Likes: Number of likes the comment received.
 - Sentiment: Sentiment of the comment. 0 represents negative, 1 represents neutral, and 2 represents positive sentiment.
 
+## How to Use
+
+1. Clone this repository to your local machine.
+2. Set up a MySQL database and configure the database credentials in the Python code and SQL scripts.
+3. Run the Jupyter Notebook `data_extraction.ipynb` to extract and load the data.
+4. Execute the SQL scripts in the `sql/` directory to perform data transformation.
+5. Analyze the transformed data in the `combined_data` table for insights.
+
 ## ETL Process
 
 The data extraction, transformation, and loading process is performed using Python and SQL.
@@ -229,3 +237,112 @@ LEFT JOIN video_comments AS vc ON vs.video_id = vc.video_id;
 
 ![Screenshot4_Transformation](/screenshots/transform_output/ss4_transform_output.png)
 
+## Transformation Steps
+
+1. **Dropping Unnecessary Columns**
+   - Removed the `unnamed:_0` column from both datasets to improve clarity.
+
+2. **Cleaning Data with Invalid Video IDs**
+   - Deleted rows where the Video ID contains '=%' to ensure valid IDs.
+
+3. **Handling Blank Views**
+   - Set Views to 0 for rows with blank values to prevent calculation issues.
+
+4. **Deleting Rows with NULL Values**
+   - Removed rows from "video_statistics" with NULL likes, views, or comments.
+
+5. **Adding Video Sentiment Classification**
+   - Added `video_sentiment_type` column to "video_comments" based on sentiment values.
+
+6. **Updating New Columns for Likes Visibility and Comment Availability**
+   - Added `likes_visibility` and `comments_availability` columns to "video_statistics" to indicate visibility and availability.
+
+7. **Aggregating Video Engagement and Sentiment**
+   - Performed an aggregation to summarize engagement metrics and sentiment scores.
+
+8. **Joining Video Statistics and Comments**
+   - Performed a JOIN operation between datasets to combine engagement and sentiment data.
+
+## Effects on the Data
+
+- Improved data quality by removing invalid IDs and NULL values.
+- Enhanced data interpretability with new columns for sentiment classification, likes visibility, and comments availability.
+- Enabled more comprehensive analysis of video engagement and sentiment.
+- Simplified data structure by dropping unnecessary columns.
+
+## Data Loading with MySQL
+```sql
+-- Create a new table for combined data
+CREATE TABLE combined_data (
+    video_id VARCHAR(255),
+    title VARCHAR(255),
+    published_at DATE,
+	video_likes INT,
+     video_sentiment_type ENUM('Negative', 'Neutral', 'Positive'),
+    likes_visibility ENUM('Public', 'Not Public'),
+    comments_availability ENUM('Enabled', 'Disabled'),
+    keyword TEXT,
+    views bigint,
+    comment TEXT,
+    comment_likes INT,
+    comment_sentiment INT
+);
+
+-- Insert transformed data into combined_data table
+INSERT INTO combined_data (video_id, title, published_at, video_likes,  video_sentiment_type, likes_visibility, comments_availability, keyword, views, comment, comment_likes, comment_sentiment)
+SELECT
+    vs.video_id,
+    vs.title,
+    vs.published_at,
+    vs.likes as video_likes,
+        vc.video_sentiment_type,
+    vs.likes_visibility,
+    vs.comments_availability,
+    vs.keyword,
+    vs.views,
+    vc.comment,
+    vc.likes as comment_likes,
+    vc.sentiment as comment_sentiment
+
+FROM video_statistics AS vs
+LEFT JOIN video_comments AS vc ON vs.video_id = vc.video_id;
+```
+
+### Data Loading Outputs
+
+![Screenshot1_Load](/screenshots/load_output/ss1_load_output.png)
+
+### Data Loading Approach:
+
+#### 1. Data Consolidation
+By combining video statistics and remarks into a single table, it is simpler to analyze relationships between disparate data points such as sentiments, likes, and comments.
+
+#### 2. Efficient Analysis
+As the join operation is performed only once during the data transformation process, storing pre-joined data in a table facilitates faster and more efficient querying and analysis.
+
+#### 3. Data Integrity
+The transformation procedure contributes to data integrity by combining pertinent data from both source tables and removing duplicate data.
+
+#### 4. Simplification
+Rather than having to manage multiple separate tables, analysts and data scientists can work with a single table
+
+## Reflection
+
+During the YouTube Data Analysis Project, I underwent an illuminating journey through the intricacies of handling and analyzing real-world data. This project served as an invaluable platform for grasping the multifaceted processes of data extraction, transformation, and loading, thereby revealing the nuances of data analysis.
+
+Some key insights from this project include:
+
+- **Complex Data Handling**: This endeavor provided a firsthand experience of dealing with real-world data, which often comes with challenges beyond the theoretical realm.
+
+- **Data Transformation Complexity**: The project highlighted the complexities involved in transforming data, particularly due to issues like invalid Video IDs, NULL values, and missing data.
+
+- **Data Quality as a Challenge**: Ensuring data quality proved to be a significant challenge. Addressing discrepancies and maintaining integrity demanded careful problem-solving.
+
+- **Database Architecture and JOIN Operations**: Developing an effective database structure and performing JOIN operations was a challenging task, especially when dealing with multiple datasets.
+
+- **Importance of Data Aggregation**: The project underscored the necessity of cleaning, processing, and aggregating data to facilitate reliable analysis and glean meaningful insights.
+
+In conclusion, this project has been an invaluable learning experience. It has deepened my understanding of data analysis, equipped me with practical skills in data cleaning and transformation, and provided a firsthand encounter with the intricacies of working with real-world data. By tackling data quality issues, refining database design, and considering validation tests, I feel better equipped to tackle similar challenges and extract valuable insights from intricate datasets.
+
+## Power BI Dashboard
+![PowerBI Dashboard](/screenshots/PowerBI%20Dashboard.jpeg)
