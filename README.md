@@ -1,6 +1,6 @@
-# Data-1205-ASG5
-
-# YouTube Data Analysis Project
+# DATA-1202-02 - DATA ANALYSIS TOOLS ANALYTICS
+## Assignment #5 - Data Archive
+## YouTube Data Analysis Project
 
 Welcome to the YouTube Data Analysis Project repository! This project aims to analyze the relationship between the popularity of YouTube videos and the sentiments of their comments. The project involves extracting data from CSV files, transforming it, and loading it into a MySQL database for analysis.
 
